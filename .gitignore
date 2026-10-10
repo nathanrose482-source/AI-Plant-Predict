@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+models/
+data/raw/
+data/knowledge/*.json
+!data/knowledge/.gitkeep
+.DS_Store
+Thumbs.db

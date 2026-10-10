@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌿 Plant Vision</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">🌿</span>
+        <h1 class="brand-name">Plant Vision</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="#classify-section" class="nav-item active">Classify</a>
+        <a href="#explain-section" class="nav-item">Explain</a>
+        <a href="/docs" target="_blank" class="nav-item">API Docs ↗</a>
+      </nav>
+      <div class="health-badge" id="healthBadge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Checking…</span>
+      </div>
+    </aside>
+
+    <!-- ── Main content ── -->
+    <main class="main-content">
+
+      <!-- ── Classify ── -->
+      <section id="classify-section" class="card">
+        <h2 class="card-title">🔍 Identify Plant</h2>
+
+        <div class="upload-zone" id="classifyDropZone">
+          <input type="file" id="classifyInput" accept="image/*" hidden />
+          <div class="upload-icon">🖼️</div>
+          <p>Drop an image here or <button class="link-btn" onclick="document.getElementById('classifyInput').click()">browse</button></p>
+          <p class="hint">Supported: JPEG · PNG · WebP</p>
+        </div>
+        <img id="classifyPreview" class="preview-img hidden" alt="Preview" />
+
+        <div class="controls">
+          <label class="control-label">
+            Confidence threshold
+            <input type="range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.75" />
+            <span id="thresholdValue">0.75</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="forceFallback" />
+            Force Gemini fallback
+          </label>
+        </div>
+
+        <button id="classifyBtn" class="btn btn-primary" disabled>Classify</button>
+
+        <div id="classifyResult" class="result-box hidden"></div>
+      </section>
+
+      <!-- ── Explain ── -->
+      <section id="explain-section" class="card">
+        <h2 class="card-title">🧠 Grad-CAM Explainability</h2>
+
+        <div class="upload-zone" id="explainDropZone">
+          <input type="file" id="explainInput" accept="image/*" hidden />
+          <div class="upload-icon">🔬</div>
+          <p>Drop an image or <button class="link-btn" onclick="document.getElementById('explainInput').click()">browse</button></p>
+        </div>
+        <img id="explainPreview" class="preview-img hidden" alt="Preview" />
+
+        <button id="explainBtn" class="btn btn-secondary" disabled>Generate Heatmap</button>
+
+        <div id="explainResult" class="result-box hidden">
+          <img id="heatmapImg" class="heatmap-img" alt="Grad-CAM Heatmap" />
+          <p id="explainMeta" class="explain-meta"></p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
