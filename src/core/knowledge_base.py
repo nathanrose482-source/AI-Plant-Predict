@@ -110,6 +110,72 @@ _BUILTIN_KNOWLEDGE: dict[str, dict[str, Any]] = {
         ],
         "caution": "May interact with blood-thinning medication. Avoid in excess during pregnancy.",
     },
+    "amaranth": {
+        "common_name": "Green Amaranth / Chaulai",
+        "scientific_name": "Amaranthus viridis",
+        "family": "Amaranthaceae",
+        "description": (
+            "Nutrient-dense leafy green with soft, broad ovate leaves. "
+            "Widely cultivated across Asia and Africa as a fast-growing staple potherb."
+        ),
+        "edibility": "Fully edible cooked or steamed; seeds are also edible as pseudo-grain.",
+        "cultivation": "Warm-season annual; thrives in fertile, well-drained soil with full sunlight.",
+        "nutritional_highlights": "Rich in calcium, iron, protein, dietary fibre, and vitamins A and C.",
+        "fgvc_notes": (
+            "Differentiated from spinach by lighter green hue and slight venation ribbing; "
+            "differentiated from red amaranth by absence of betalain reddish-purple pigmentation."
+        ),
+        "traditional_uses": [
+            "Chaulai saag",
+            "Amaranth stir-fry with coconut (Thoran)",
+            "Lentil and amaranth curries",
+        ],
+        "caution": "Contains mild levels of nitrates and oxalates; cooking reduces soluble oxalates.",
+    },
+    "red_amaranth": {
+        "common_name": "Red Amaranth / Lal Chaulai",
+        "scientific_name": "Amaranthus tricolor",
+        "family": "Amaranthaceae",
+        "description": (
+            "Striking edible leafy green characterized by vibrant red, crimson, or purple "
+            "leaf coloration due to high betalain antioxidant content."
+        ),
+        "edibility": "Fully edible raw (young microgreens) or cooked (mature foliage).",
+        "cultivation": "Warm-season, drought-tolerant annual; develops intense red color under bright sun.",
+        "nutritional_highlights": "Exceptional levels of betalain pigments, anthocyanins, iron, and vitamin K.",
+        "fgvc_notes": (
+            "Prominent central crimson-magenta pigmentation along veins distinguishes it "
+            "readily from green amaranth and red spinach (Basella rubra).",
+        ),
+        "traditional_uses": [
+            "Lal saag stir-fry",
+            "Cheera thoran",
+            "Nutritious vegetable broth",
+        ],
+        "caution": "Cook thoroughly to optimize mineral bioavailability and reduce oxalates.",
+    },
+    "coriander": {
+        "common_name": "Coriander / Cilantro / Dhaniya",
+        "scientific_name": "Coriandrum sativum",
+        "family": "Apiaceae",
+        "description": (
+            "Delicate, aromatic herb with serrated, fan-shaped lower foliage and feathery upper leaves. "
+            "Both fresh leaves (cilantro) and dried spherical schizocarp seeds (coriander spice) are used."
+        ),
+        "edibility": "Leaves, tender stems, roots, and seeds are all completely edible.",
+        "cultivation": "Cool-season annual; sensitive to bolting in extreme heat; prefers moist, rich soil.",
+        "nutritional_highlights": "High in linalool, vitamin K, vitamin C, and dietary antioxidants.",
+        "fgvc_notes": (
+            "Leaves have rounded serrations distinct from flat Italian parsley. "
+            "Whole seeds are dry, spherical, and ribbed, presenting a unique fine-grained challenge vs foliage."
+        ),
+        "traditional_uses": [
+            "Fresh garnish for curries and soups",
+            "Coriander mint chutney",
+            "Ground coriander seed in spice blends (Garam Masala)",
+        ],
+        "caution": "Certain individuals carry the OR6A2 olfactory receptor gene causing a soapy perception.",
+    },
     "spinach": {
         "common_name": "Spinach",
         "scientific_name": "Spinacia oleracea",
@@ -150,15 +216,22 @@ class KnowledgeBase:
         if path.exists():
             try:
                 with open(path, encoding="utf-8") as f:
-                    user_db: dict[str, Any] = json.load(f)
-                # Deep-merge: user entries override or extend built-ins
-                for key, val in user_db.items():
-                    normalised_key = _normalise_key(key)
-                    if normalised_key in self._db:
-                        self._db[normalised_key].update(val)
-                    else:
-                        self._db[normalised_key] = val
-                logger.info("Loaded %d extra knowledge entries from %s", len(user_db), path)
+                    user_data = json.load(f)
+                
+                # Support either dict mapping or list of card dicts
+                if isinstance(user_data, list):
+                    for item in user_data:
+                        name = item.get("common_name", "") or item.get("scientific_name", "")
+                        if name:
+                            self._db[_normalise_key(name)] = item
+                elif isinstance(user_data, dict):
+                    for key, val in user_data.items():
+                        normalised_key = _normalise_key(key)
+                        if normalised_key in self._db:
+                            self._db[normalised_key].update(val)
+                        else:
+                            self._db[normalised_key] = val
+                logger.info("Loaded knowledge DB from %s", path)
             except Exception as exc:
                 logger.warning("Could not load knowledge DB from %s: %s", path, exc)
 

@@ -59,6 +59,12 @@ def load_checkpoint(checkpoint_path: Path) -> tuple[nn.Module, list[str]]:
     return model, class_names
 
 
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 def export(
     model: nn.Module,
     output_path: Path,
@@ -78,6 +84,7 @@ def export(
         dynamic_axes={"image": {0: "batch_size"}, "logits": {0: "batch_size"}},
         opset_version=opset,
         do_constant_folding=True,
+        dynamo=False,
     )
     logger.info("ONNX model exported to %s (opset %d)", output_path, opset)
 

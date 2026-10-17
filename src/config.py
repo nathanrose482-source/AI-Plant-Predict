@@ -28,8 +28,17 @@ CLASS_NAMES_PATH: Path = MODEL_DIR / "class_names.json"
 KNOWLEDGE_DB_PATH: Path = KNOWLEDGE_DIR / "plant_knowledge.json"
 DATASET_CSV_PATH: Path = DATA_DIR / "dataset_master.csv"
 
-# ── Model / Inference ─────────────────────────────────────────────────────────
-NUM_CLASSES: int = int(os.getenv("NUM_CLASSES", "5"))
+def _get_num_classes() -> int:
+    if CLASS_NAMES_PATH.exists():
+        try:
+            import json
+            with open(CLASS_NAMES_PATH, encoding="utf-8") as f:
+                return len(json.load(f))
+        except Exception:
+            pass
+    return int(os.getenv("NUM_CLASSES", "4"))
+
+NUM_CLASSES: int = _get_num_classes()
 IMAGE_SIZE: int = 256          # resize target (shorter edge)
 CROP_SIZE: int = 224           # center-crop target
 IMAGENET_MEAN: list[float] = [0.485, 0.456, 0.406]

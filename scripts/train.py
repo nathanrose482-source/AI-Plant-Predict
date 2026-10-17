@@ -248,7 +248,7 @@ def main() -> None:
     parser.add_argument("--val_split", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", default="models/plant_classifier.pt")
-    parser.add_argument("--class_names", nargs="+", default=DEFAULT_CLASS_NAMES)
+    parser.add_argument("--class_names", nargs="+", default=None, help="Explicit class names; if omitted, inferred from data")
     args = parser.parse_args()
 
     random.seed(args.seed)
@@ -258,14 +258,34 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Training device: %s", device)
 
-    # ── Load dataset ──────────────────────────────────────────────────────────
+    # ── Discover or load class names ──────────────────────────────────────────
     csv_path = Path(args.csv)
     data_dir = Path(args.data_dir)
 
+    class_names = args.class_names
+    if not class_names:
+        if csv_path.exists():
+            import csv
+            with open(csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                discovered = sorted({row["label"] for row in reader if row.get("label")})
+            if discovered:
+                class_names = discovered
+                logger.info("Auto-discovered %d classes from CSV: %s", len(class_names), class_names)
+        elif data_dir.exists():
+            discovered = sorted([d.name.lower().replace("-", "_").replace(" ", "_") for d in data_dir.iterdir() if d.is_dir() and not d.name.startswith(".")])
+            if discovered:
+                class_names = discovered
+                logger.info("Auto-discovered %d classes from data_dir: %s", len(class_names), class_names)
+
+    if not class_names:
+        class_names = DEFAULT_CLASS_NAMES
+
+    # ── Load dataset ──────────────────────────────────────────────────────────
     if csv_path.exists():
-        full_ds = PlantDataset.from_csv(csv_path, args.class_names)
+        full_ds = PlantDataset.from_csv(csv_path, class_names)
     elif data_dir.exists():
-        full_ds = PlantDataset.from_directory(data_dir, args.class_names)
+        full_ds = PlantDataset.from_directory(data_dir, class_names)
     else:
         raise FileNotFoundError(
             f"Neither CSV ({csv_path}) nor data directory ({data_dir}) found. "
@@ -281,11 +301,11 @@ def main() -> None:
     from torch.utils.data import Subset
 
     train_samples = [full_ds.samples[i] for i in train_idx]
-    class_weights = compute_class_weights(train_samples, len(args.class_names))
+    class_weights = compute_class_weights(train_samples, len(class_names))
 
-    train_subset = Subset(PlantDataset(train_samples, args.class_names, TRAIN_TRANSFORMS), list(range(len(train_samples))))
+    train_subset = Subset(PlantDataset(train_samples, class_names, TRAIN_TRANSFORMS), list(range(len(train_samples))))
     val_subset = Subset(
-        PlantDataset([full_ds.samples[i] for i in val_idx], args.class_names, VAL_TRANSFORMS),
+        PlantDataset([full_ds.samples[i] for i in val_idx], class_names, VAL_TRANSFORMS),
         list(range(len(val_idx))),
     )
 
@@ -293,11 +313,11 @@ def main() -> None:
     sample_weights = [class_weights[label].item() for _, label in train_samples]
     sampler = WeightedRandomSampler(sample_weights, num_samples=len(sample_weights), replacement=True)
 
-    train_loader = DataLoader(train_subset, batch_size=args.batch_size, sampler=sampler, num_workers=2, pin_memory=True)
-    val_loader = DataLoader(val_subset, batch_size=args.batch_size, shuffle=False, num_workers=2, pin_memory=True)
+    train_loader = DataLoader(train_subset, batch_size=args.batch_size, sampler=sampler, num_workers=0)
+    val_loader = DataLoader(val_subset, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
     # ── Model + loss + optim ──────────────────────────────────────────────────
-    model = build_model(len(args.class_names)).to(device)
+    model = build_model(len(class_names)).to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights.to(device))
     optimizer = torch.optim.AdamW(
         filter(lambda p: p.requires_grad, model.parameters()),
@@ -330,7 +350,7 @@ def main() -> None:
                     "epoch": epoch,
                     "model_state_dict": model.state_dict(),
                     "val_acc": val_acc,
-                    "class_names": args.class_names,
+                    "class_names": class_names,
                 },
                 output_path,
             )
@@ -339,7 +359,7 @@ def main() -> None:
     # Save class names JSON for inference
     cn_path = output_path.parent / "class_names.json"
     with open(cn_path, "w", encoding="utf-8") as f:
-        json.dump(args.class_names, f, indent=2)
+        json.dump(class_names, f, indent=2)
     logger.info("Class names saved to %s", cn_path)
     logger.info("Training complete. Best val accuracy: %.4f", best_val_acc)
 

@@ -58,9 +58,9 @@ def client_no_models():
     """TestClient with all engines reporting not-ready."""
     from src.main import app
 
-    with patch("src.core.onnx_engine.onnx_classifier") as mock_onnx, \
-         patch("src.core.gradcam.gradcam_engine") as mock_cam, \
-         patch("src.core.vlm_fallback.vlm_fallback") as mock_vlm:
+    with patch("src.api.routes.onnx_classifier") as mock_onnx, \
+         patch("src.api.routes.gradcam_engine") as mock_cam, \
+         patch("src.api.routes.vlm_fallback") as mock_vlm:
 
         mock_onnx.is_ready = False
         mock_cam.is_ready = False

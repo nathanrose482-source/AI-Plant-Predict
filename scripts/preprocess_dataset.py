@@ -47,18 +47,17 @@ def scan_directory(data_dir: Path) -> list[tuple[Path, str]]:
     """Return (image_path, class_name) pairs from a class-folder layout."""
     samples: list[tuple[Path, str]] = []
     for cls_dir in sorted(data_dir.iterdir()):
-        if not cls_dir.is_dir():
+        if not cls_dir.is_dir() or cls_dir.name.startswith("."):
             continue
         cls_name = cls_dir.name.lower().replace("-", "_").replace(" ", "_")
-        if cls_name not in CLASS_NAMES:
-            logger.warning("Unrecognised class directory '%s' — skipping.", cls_dir.name)
-            continue
         found = [
-            f for f in cls_dir.rglob("*") if f.suffix.lower() in SUPPORTED_EXTS
+            f for f in cls_dir.rglob("*")
+            if f.is_file() and f.suffix.lower() in SUPPORTED_EXTS and "augmented" not in f.parts
         ]
-        logger.info("  %s: %d images", cls_name, len(found))
-        for f in found:
-            samples.append((f, cls_name))
+        if found:
+            logger.info("  %s: %d images", cls_name, len(found))
+            for f in found:
+                samples.append((f, cls_name))
     return samples
 
 
