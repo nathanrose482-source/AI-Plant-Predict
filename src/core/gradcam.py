@@ -111,7 +111,13 @@ class GradCAMEngine:
                 class_names: list[str] = json.load(f)
             n_classes = len(class_names)
         else:
-            n_classes = num_classes or 5
+            checkpoint = torch.load(
+                model_path, map_location="cpu", weights_only=True
+            )
+            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+                checkpoint = checkpoint["model_state_dict"]
+
+            n_classes = checkpoint["classifier.3.weight"].shape[0]
 
         from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
 
