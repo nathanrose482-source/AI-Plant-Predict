@@ -118,9 +118,9 @@ $("classifyBtn").addEventListener("click", async () => {
     }
 
     renderClassifyResult(d);
-  } catch (err) {
-    showToast("Network error — is the server running?");
-    console.error(err);
+    } catch (err) {
+    showToast(`Classification failed: ${err.message}`);
+    console.error("Classification error:", err);
   } finally {
     setLoading(btn, false, "Classify");
   }
@@ -192,9 +192,9 @@ $("explainBtn").addEventListener("click", async () => {
     $("explainMeta").textContent =
       `Predicted: ${d.predicted_class} · Confidence: ${(d.raw_confidence * 100).toFixed(1)}%`;
     $("explainResult").classList.remove("hidden");
-  } catch (err) {
-    showToast("Network error — is the server running?");
-    console.error(err);
+    } catch (err) {
+    showToast(`Explanation failed: ${err.message}`);
+    console.error("Explanation error:", err);
   } finally {
     setLoading(btn, false, "Generate Heatmap");
   }
