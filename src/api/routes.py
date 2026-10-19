@@ -208,7 +208,7 @@ async def classify(
         nutritional_highlights=local_card.get("nutritional_highlights"),
         traditional_uses=local_card.get("traditional_uses"),
         caution=local_card.get("caution"),
-        fgvc_notes=local_card.get("fgvc_notes"),
+        fgvc_notes=" ".join(str(x) for x in local_card.get("fgvc_notes")) if isinstance(local_card.get("fgvc_notes"), tuple) else local_card.get("fgvc_notes"),
         extra={"ood_reason": ood_reason} if ood_reason else None,
     )
 
@@ -307,5 +307,5 @@ def _build_knowledge_card(data: dict) -> KnowledgeCard:
         nutritional_highlights=data.get("nutritional_highlights"),
         traditional_uses=data.get("traditional_uses"),
         caution=data.get("caution"),
-        fgvc_notes=data.get("fgvc_notes"),
+        fgvc_notes=str(data.get("fgvc_notes") or "") if not isinstance(data.get("fgvc_notes"), tuple) else " ".join(str(x) for x in data.get("fgvc_notes")),
     )

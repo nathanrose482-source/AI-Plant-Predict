@@ -200,6 +200,31 @@ _BUILTIN_KNOWLEDGE: dict[str, dict[str, Any]] = {
         ],
         "caution": "High in oxalates; consume alongside calcium-rich foods to reduce absorption.",
     },
+    "mint": {
+        "common_name": "Mint / Pudina",
+        "scientific_name": "Mentha spicata / Mentha piperita",
+        "family": "Lamiaceae",
+        "description": (
+            "Fast-growing aromatic herb with bright-green serrated leaves and a distinctive "
+            "cool menthol fragrance. Spearmint (Mentha spicata) is the most common Indian variety."
+        ),
+        "edibility": "Leaves and stems are fully edible; widely used fresh or dried.",
+        "cultivation": "Thrives in moist, well-drained soil with partial shade. Spreads rapidly; best grown in containers.",
+        "nutritional_highlights": "Rich in vitamins A and C, iron, manganese, rosmarinic acid, and antioxidants.",
+        "fgvc_notes": (
+            "Serrated leaf margins and opposite leaf arrangement are key visual identifiers. "
+            "Leaves are smaller and more intensely green than coriander; stems are square in cross-section."
+        ),
+        "traditional_uses": [
+            "Coriander-mint chutney",
+            "Raita",
+            "Mint tea / herbal infusions",
+            "Mojitos and cold drinks",
+            "Salad garnish",
+            "Biriyani flavouring",
+        ],
+        "caution": "Generally safe; large medicinal doses may be unsuitable for infants and young children.",
+    },
 }
 
 
